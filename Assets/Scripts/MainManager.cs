@@ -9,12 +9,15 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
+    public Text NewRecordText;
 
     private bool m_Started = false;
     private int m_Points;
 
     private bool m_GameOver = false;
+    private bool m_NewRecord = false;
 
 
     // Start is called before the first frame update
@@ -34,6 +37,8 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        ScoreRecord currentRecord = ScoreDataPersistanceManager.Instance.GetCurrentRecord();
+        SetBestScoreText(currentRecord.Name.Length > 0 ? currentRecord.Name : "None", currentRecord.Score);
     }
 
     private void Update()
@@ -53,14 +58,6 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
-            ScoreRecord currentRecord = ScoreDataPersistanceManager.Instance.GetCurrentRecord();
-            if (currentRecord != null && currentRecord.Score < m_Points)
-            {
-                Debug.Log("NEW RECORD");
-                // TODO: ADD VISUAL FEEDBACK
-                ScoreDataPersistanceManager.Instance.SetCurrentScore(m_Points);
-                ScoreDataPersistanceManager.Instance.SaveData();
-            }
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -72,11 +69,36 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+
+        if (m_Points > ScoreDataPersistanceManager.Instance.GetCurrentRecord().Score)
+        {
+            Debug.Log($"New record: {ScoreDataPersistanceManager.Instance.GetSessionName()} - {m_Points}");
+            SetBestScoreText(ScoreDataPersistanceManager.Instance.GetSessionName(), m_Points);
+            SaveNewRecord();
+            m_NewRecord = true;
+        }
     }
 
     public void GameOver()
     {
+        Debug.Log("GAME OVER");
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if (m_NewRecord)
+        {
+            NewRecordText.text = $"NEW RECORD!! {ScoreDataPersistanceManager.Instance.GetSessionName()} - {m_Points} points";
+            NewRecordText.gameObject.SetActive(true);
+        }
+    }
+
+    private void SaveNewRecord()
+    {
+        ScoreDataPersistanceManager.Instance.SetCurrentScore(m_Points);
+        ScoreDataPersistanceManager.Instance.SaveData();
+    }
+
+    private void SetBestScoreText(string name, int score)
+    {
+        BestScoreText.text = $"Best Score : {name} : {score}";
     }
 }

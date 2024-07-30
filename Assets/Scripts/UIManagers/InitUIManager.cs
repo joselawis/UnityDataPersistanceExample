@@ -15,10 +15,10 @@ public class InitUIManager : UIManager<InitUIManager>
 
     public void GetBestScore()
     {
-        var score = ScoreDataPersistanceManager.Instance.GetCurrentRecord();
-        if (score != null)
+        var currentRecord = ScoreDataPersistanceManager.Instance.GetCurrentRecord();
+        if (currentRecord.Score > 0)
         {
-            bestScoreText.text = score.ToString();
+            bestScoreText.text = $"Best score: {currentRecord.Name} - {currentRecord.Score}";
         }
         else { bestScoreText.text = $"There is no score records"; }
     }

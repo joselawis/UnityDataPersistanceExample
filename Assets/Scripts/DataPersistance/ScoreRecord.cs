@@ -1,6 +1,6 @@
 using Assets.Lawis.DataPersistance;
 
-public class ScoreRecord : DataPersistable
+public class ScoreRecord : JsonConvertibleObject
 {
     private string name = "";
     private int score = 0;
